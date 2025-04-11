@@ -151,3 +151,5 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         aliens.forEach { it.draw(canvas) }
     }
 }
+
+//test
