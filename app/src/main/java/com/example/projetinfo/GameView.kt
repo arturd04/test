@@ -121,7 +121,8 @@ open class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Call
 
     fun update() {
         val currentTime = System.currentTimeMillis()
-        // Tir du joueur: créer une balle toutes les bulletInterval millisecondes
+
+        // Tir du joueur
         if (currentTime - lastBulletTime > bulletInterval) {
             bullets.add(Bullet(player.x, player.y, bulletSpeed))
             lastBulletTime = currentTime
@@ -129,22 +130,29 @@ open class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Call
         bullets.forEach { it.update() }
         bullets.removeAll { it.posY < 0 }
 
-        // Tir des aliens: chance aléatoire pour tirer une balle ennemie
+        // Tir des aliens
         if (currentTime - lastEnemyShotTime > 1500) {
-            if (aliens.isNotEmpty() && (0..100).random() < 30) { // 30% de chance
+            if (aliens.isNotEmpty() && (0..100).random() < 30) {
                 val shooter = aliens.random()
-                enemyBullets.add(EnemyBullet(shooter.x + shooter.width / 2, shooter.y + shooter.height, bulletSpeed * 0.8f))
+                enemyBullets.add(
+                    EnemyBullet(
+                        shooter.x + shooter.width / 2,
+                        shooter.y + shooter.height,
+                        bulletSpeed * 0.8f
+                    )
+                )
             }
             lastEnemyShotTime = currentTime
         }
         enemyBullets.forEach { it.update() }
         enemyBullets.removeAll { it.posY > height }
 
-        // Mouvement des aliens: vérifier et inverser la direction s'ils touchent un bord
+        // Mouvement des aliens
         var shouldChangeDirection = false
         for (alien in aliens) {
             if ((alien.x + alien.width >= width && alienDirection > 0) ||
-                (alien.x <= 0 && alienDirection < 0)) {
+                (alien.x <= 0 && alienDirection < 0)
+            ) {
                 shouldChangeDirection = true
                 break
             }
@@ -156,11 +164,9 @@ open class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Call
             aliens.forEach { it.x += alienDirection }
         }
 
-        // Vérification de la position des aliens : si l'un d'eux dépasse la position du joueur,
-        // cela signifie qu'il est passé derrière la zone de tir, donc game over.
+        // Game over si un alien passe sous le joueur
         for (alien in aliens) {
             if (alien.y + alien.height >= player.y) {
-                // Game over immédiat si un alien est trop bas
                 val intent = Intent(context, GameOverActivity::class.java)
                 intent.putExtra("score", levelScore)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -170,8 +176,27 @@ open class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Call
             }
         }
 
-        // Collision: balles du joueur vs aliens
-        val bulletsToRemove = mutableListOf<Bullet>()
+        // 💥 Collision des balles ennemies avec le joueur
+        val enemyBulletsToRemove = mutableListOf<EnemyBullet>()
+        for (enemyBullet in enemyBullets) {
+            if (enemyBullet.intersects(player.getRect())) {
+                enemyBulletsToRemove.add(enemyBullet)
+                player.hp--
+                onPlayerHpChanged?.invoke(player.hp)
+                if (player.hp <= 0) {
+                    val intent = Intent(context, GameOverActivity::class.java)
+                    intent.putExtra("score", levelScore)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                    gameLoopThread.running = false
+                    return
+                }
+            }
+        }
+        enemyBullets.removeAll(enemyBulletsToRemove)
+
+        // 💥 Collision des balles du joueur avec les aliens
+        val bulletsToRemove = mutableListOf<Bullet>()  // <-- c'était ça qui manquait
         val aliensToRemove = mutableListOf<Alien>()
         for (alien in aliens) {
             for (bullet in bullets) {
@@ -196,7 +221,7 @@ open class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Call
         bullets.removeAll(bulletsToRemove)
         aliens.removeAll(aliensToRemove)
 
-        // Victoire : tous les aliens sont éliminés -> passage au niveau suivant
+        // ✅ Niveau terminé
         if (aliens.isEmpty()) {
             val intent = Intent(context, LevelCompleteActivity::class.java)
             intent.putExtra("nextLevel", currentLevel + 1)
@@ -206,19 +231,8 @@ open class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Call
             gameLoopThread.running = false
             return
         }
-
-        // Défaite supplémentaire : si un alien atteint le bas (optional, peut être gardé pour redondance)
-        for (alien in aliens) {
-            if (alien.y + alien.height >= height) {
-                val intent = Intent(context, GameOverActivity::class.java)
-                intent.putExtra("score", levelScore)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-                gameLoopThread.running = false
-                return
-            }
-        }
     }
+
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
