@@ -6,8 +6,9 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.RectF
 
-class Alien(context: Context, var x: Float, var y: Float) {
-    private val bitmap: Bitmap
+open class Alien(context: Context, var x: Float, var y: Float) {
+    // Déclare le bitmap en protected pour que les classes héritées puissent y accéder
+    protected val bitmap: Bitmap
     val width: Float
     val height: Float
 
@@ -18,7 +19,8 @@ class Alien(context: Context, var x: Float, var y: Float) {
         height = bitmap.height.toFloat()
     }
 
-    fun draw(canvas: Canvas) {
+    open fun draw(canvas: Canvas) {
+        // Utilise le bitmap protégé pour dessiner l'alien
         canvas.drawBitmap(bitmap, x, y, null)
     }
 

@@ -3,20 +3,27 @@ package com.example.projetinfo
 import android.graphics.Canvas
 import android.view.SurfaceHolder
 
-class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView: GameView) : Thread() {
+class GameLoopThread(
+    private val surfaceHolder: SurfaceHolder,
+    private val gameView: GameView
+) : Thread() {
+
     var running = false
 
     override fun run() {
+        var canvas: Canvas? = null
         while (running) {
-            val canvas: Canvas? = surfaceHolder.lockCanvas()
-            if (canvas != null) {
+            try {
+                canvas = surfaceHolder.lockCanvas()
                 synchronized(surfaceHolder) {
                     gameView.update()
-                    gameView.draw(canvas)
+                    if (canvas != null) {
+                        gameView.draw(canvas)
+                    }
                 }
-                surfaceHolder.unlockCanvasAndPost(canvas)
+            } finally {
+                canvas?.let { surfaceHolder.unlockCanvasAndPost(it) }
             }
-            sleep(16) // 60 fps
         }
     }
 }

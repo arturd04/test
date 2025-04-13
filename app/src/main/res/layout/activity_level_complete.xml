@@ -8,17 +8,17 @@
     android:background="#000000">
 
     <TextView
-        android:id="@+id/gameOverTextView"
+        android:id="@+id/messageTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Game Over"
+        android:text="Niveau Terminé !"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:padding="16dp" />
 
     <Button
-        android:id="@+id/restartButton"
+        android:id="@+id/nextLevelButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Recommencer" />
+        android:text="Niveau Suivant" />
 </LinearLayout>

@@ -5,12 +5,12 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 
-class Bullet(var posX: Float, var posY: Float, private val speed: Float = 15f) {
+class EnemyBullet(var posX: Float, var posY: Float, private val speed: Float = 5f) {
     private val radius = 10f
-    private val paint = Paint().apply { color = Color.WHITE }
+    private val paint = Paint().apply { color = Color.RED }
 
     fun update() {
-        posY -= speed
+        posY += speed
     }
 
     fun draw(canvas: Canvas) {
