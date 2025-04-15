@@ -44,6 +44,6 @@ class GameOverActivity : AppCompatActivity(), ScoreObserver {
 
     // Implémentation de l'interface ScoreObserver
     override fun onScoreChanged(newScore: Int) {
-        gameOverTextView.text = "Game Over\nScore Total: $newScore"
+        gameOverTextView.text = "Game Over :(\nScore Total : $newScore"
     }
 }

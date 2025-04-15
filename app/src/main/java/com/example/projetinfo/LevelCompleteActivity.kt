@@ -21,7 +21,7 @@ class LevelCompleteActivity : AppCompatActivity() {
 
         // Récupération du TextView et mise à jour du texte
         val messageTextView = findViewById<TextView>(R.id.messageTextView)
-        messageTextView.text = "Bravo !\nScore: $totalScore\nProchain niveau: $nextLevel"
+        messageTextView.text = "Bravo !\nScore : $totalScore\nProchain niveau : $nextLevel"
 
         // Bouton pour passer au niveau suivant
         val nextLevelButton = findViewById<Button>(R.id.nextLevelButton)
