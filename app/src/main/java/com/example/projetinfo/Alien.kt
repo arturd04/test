@@ -11,6 +11,9 @@ open class Alien(context: Context, var x: Float, var y: Float) {
     protected val bitmap: Bitmap
     val width: Float
     val height: Float
+    var lastShotTime: Long = System.currentTimeMillis()
+    var nextShotDelay: Long = (2000..10000).random().toLong() // entre 2 et 10s
+
 
     init {
         val original = BitmapFactory.decodeResource(context.resources, R.drawable.alien)
