@@ -20,7 +20,7 @@ object AlienFactory {
             when ((1..3).random()) {
                 1 -> Alien(context, x, y)  // Alien basique (1 hp)
                 2 -> AlienWithHP(context, x, y, initialHp = 2)  // Alien avec 2 hp
-                else -> AlienWithHP(context, x, y, initialHp = (2..3).random()) // Alien avec 3 hp
+                else -> AlienShooter(context, x, y) // Alien avec 3 hp
             }
         }
     }

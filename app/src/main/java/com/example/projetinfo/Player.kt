@@ -13,12 +13,16 @@ class Player(context: Context) {
     var height: Float
     var hp: Int = 3  // Le joueur a 3 points de vie par partie
     private val bitmap: Bitmap
+    private val moveSpeed = 30f
+    private var targetX = x
+    private val screenWidth = context.resources.displayMetrics.widthPixels
+
 
     init {
         val originalBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.player)
         // Nouvelle taille souhaitée pour le joueur
-        val newWidth = 200
-        val newHeight = 200
+        val newWidth = 100
+        val newHeight = 100
         bitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
         width = bitmap.width.toFloat()
         height = bitmap.height.toFloat()
@@ -34,5 +38,27 @@ class Player(context: Context) {
     // Méthode pour obtenir le rectangle de collision du joueur
     fun getRect(): RectF {
         return RectF(x - width / 2, y, x + width / 2, y + height)
+    }
+    // Methode qui gere la vitesse de deplacement du joueur
+    fun setTarget(target: Float) {
+        targetX = target
+    }
+    fun update() {
+        if (x < targetX) {
+            x += moveSpeed
+            if (x > targetX) x = targetX
+        } else if (x > targetX) {
+            x -= moveSpeed
+            if (x < targetX) x = targetX
+        }
+
+        // Limites gauche/droite de l'écran
+        val halfWidth = width / 2
+        if (x - halfWidth < 0) {
+            x = halfWidth
+        }
+        if (x + halfWidth > screenWidth) {
+            x = screenWidth - halfWidth
+        }
     }
 }

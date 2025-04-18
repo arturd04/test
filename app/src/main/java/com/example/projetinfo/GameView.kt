@@ -34,8 +34,8 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     private val offsetX = 100f
     private val offsetY = 100f
 
-    private var bulletSpeed = 30f
-    private var bulletInterval: Long = 100L
+    private var bulletSpeed = 80f
+    private var bulletInterval: Long = 20L
     private var isShooting = false
     private var currentLevel = 1
     private var levelScore = 0
@@ -89,11 +89,9 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
             for (col in 0 until aliensPerRow) {
                 val x = offsetX + col * alienSpacingX
                 val y = offsetY + row * alienSpacingY
-                val typeChoice = (1..3).random()
-                aliens.add(
-                    if (currentLevel == 1 || typeChoice == 1) Alien(context, x, y)
-                    else AlienWithHP(context, x, y, initialHp = typeChoice)
-                )
+                val alien = AlienFactory.createAlien(context, x, y, currentLevel)
+                aliens.add(alien)
+
             }
         }
     }
@@ -122,7 +120,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                player.x = event.x
+                player.setTarget(event.x)
                 isShooting = true
             }
             MotionEvent.ACTION_UP -> {
@@ -134,8 +132,9 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
     fun update() {
         val currentTime = System.currentTimeMillis()
+        player.update()
 
-        // 🔫 Tir automatique du joueur si le doigt est maintenu
+        // Tir automatique du joueur si le doigt est maintenu
         if (isShooting && currentTime - lastBulletTime > bulletInterval) {
             bullets.add(Bullet(player.x, player.y, bulletSpeed))
             lastBulletTime = currentTime
@@ -143,7 +142,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         bullets.forEach { it.update() }
         bullets.removeAll { it.y < 0 }
 
-        // 👾 Tir indépendant et aléatoire des aliens
+        // Tir indépendant et aléatoire des aliens
         for (alien in aliens) {
             if (currentTime - alien.lastShotTime >= alien.nextShotDelay) {
                 enemyBullets.add(
@@ -158,11 +157,11 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
             }
         }
 
-        // 🔻 Mise à jour des tirs ennemis
+        // Mise à jour des tirs ennemis
         enemyBullets.forEach { it.update() }
         enemyBullets.removeAll { it.y > height }
 
-        // 🧱 Gestion des collisions tirs ennemis ↔ barrières + effets visuels
+        // Gestion des collisions tirs ennemis ↔ barrières + effets visuels
         val barrierHits = mutableListOf<Pair<Barrier, EnemyBullet>>()
         for (bullet in enemyBullets) {
             for (barrier in barriers) {
@@ -178,7 +177,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         }
         barriers.removeAll { it.isDestroyed() }
 
-        // ⬇️ Limite de descente des aliens + changement de direction
+        // Limite de descente des aliens + changement de direction
         val maxAlienY = height - 500f
         var shouldChangeDirection = false
         for (alien in aliens) {
@@ -199,13 +198,13 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
             }
         }
 
-        // 🚀 Vitesse ajustée selon le nombre de lignes restantes
+        // Vitesse ajustée selon le nombre de lignes restantes
         val remainingRows = aliens.map { it.y }.distinct().size
         val adjustedSpeed = alienSpeed * (1f + ((3 - remainingRows) * 0.3f))
         val actualDirection = if (alienDirection > 0) adjustedSpeed else -adjustedSpeed
         aliens.forEach { it.x += actualDirection }
 
-        // ☠️ Game Over si un alien atteint le joueur
+        // Game Over si un alien atteint le joueur
         for (alien in aliens) {
             if (alien.y + alien.height >= player.y) {
                 val intent = Intent(context, GameOverActivity::class.java)
@@ -217,7 +216,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
             }
         }
 
-        // ❤️ Collision tirs ennemis ↔ joueur
+        // Collision tirs ennemis ↔ joueur
         val enemyHits = mutableListOf<EnemyBullet>()
         for (bullet in enemyBullets) {
             if (RectF.intersects(bullet.getRect(), player.getRect())) {
@@ -236,7 +235,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         }
         enemyBullets.removeAll(enemyHits)
 
-        // 💥 Collision tirs joueur ↔ aliens
+        // Collision tirs joueur ↔ aliens
         val bulletsToRemove = mutableListOf<Bullet>()
         val aliensToRemove = mutableListOf<Alien>()
         for (alien in aliens) {
@@ -257,7 +256,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         bullets.removeAll(bulletsToRemove)
         aliens.removeAll(aliensToRemove)
 
-        // 🎉 Niveau terminé
+        // Niveau terminé
         if (aliens.isEmpty()) {
             val intent = Intent(context, LevelCompleteActivity::class.java)
             intent.putExtra("nextLevel", currentLevel + 1)
@@ -267,7 +266,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
             gameLoopThread.running = false
         }
 
-        // ✨ Mise à jour des effets visuels des impacts
+        // Mise à jour des effets visuels des impacts
         barrierHitEffects.forEach { it.update() }
         barrierHitEffects.removeAll { it.isFinished() }
     }
@@ -282,7 +281,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         barriers.forEach { it.draw(canvas, Paint()) }
         barrierHitEffects.forEach { it.draw(canvas, Paint()) }
 
-        // ❤️ Affichage des vies avec des cœurs rouges (À LA FIN)
+        // Affichage des vies avec des cœurs rouges
         val spacing = 50f
         val totalWidth = (player.hp - 1) * spacing
         val startX = player.x - totalWidth / 2
