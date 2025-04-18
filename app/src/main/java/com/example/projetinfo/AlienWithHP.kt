@@ -19,7 +19,7 @@ class AlienWithHP(
     override fun draw(canvas: Canvas) {
         // Appelle le dessin de base (utilise le bitmap protégé de la classe Alien)
         super.draw(canvas)
-        // Affiche le nombre de points de vie en gras si hp > 1
+        // Affiche le nombre de points de vie si hp > 1
         if (hp > 1) {
             val textPaint = Paint().apply {
                 color = Color.BLUE

@@ -20,7 +20,7 @@ class Player(context: Context) {
 
     init {
         val originalBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.player)
-        // Nouvelle taille souhaitée pour le joueur
+        // Taille du joueur
         val newWidth = 100
         val newHeight = 100
         bitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)

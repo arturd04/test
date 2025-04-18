@@ -20,9 +20,5 @@ class EnemyBullet(var x: Float, var y: Float, private val speed: Float = 5f) {
     fun getRect(): RectF {
         return RectF(x - radius, y - radius, x + radius, y + radius)
     }
-
-    fun intersects(rect: RectF): Boolean {
-        return RectF.intersects(getRect(), rect)
-    }
 }
 
